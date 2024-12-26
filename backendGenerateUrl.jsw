@@ -1,0 +1,23 @@
+import { mediaManager } from 'wix-media-backend';
+
+export async function generateUploadUrl() {
+  try {
+    const uploadUrlResponse = await mediaManager.getUploadUrl(
+      "/myUploadFolder/subfolder",
+      {
+        "mediaOptions": {
+          "mimeType": "image/jpeg",
+          "mediaType": "image"
+        },
+        "metadataOptions": {
+          "isPrivate": false,
+          "isVisitorUpload": false
+        }
+      }
+    );
+    console.log("Upload URL:", uploadUrlResponse.uploadUrl);
+    return uploadUrlResponse.uploadUrl;
+  } catch (error) {
+    console.error("Error generating upload URL:", error);
+  }
+}
