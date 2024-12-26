@@ -1,0 +1,37 @@
+import { mediaManager } from "wix-media-backend";
+
+/**
+ * Uploads a Base64 image to Wix Media Manager.
+ * @param {string} base64Image - The Base64 string of the image.
+ * @param {string} fileName - The name for the uploaded file.
+ * @returns {Promise<string>} - The URL of the uploaded image.
+ */
+export async function uploadCroppedImage(base64Image, fileName) {
+    try {
+        // Extract Base64 data (removing the "data:image/jpeg;base64," prefix)
+        const base64Data = base64Image.replace(/^data:image\/[a-z]+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+
+        // Upload the file to Wix Media Manager
+        const uploadResult = await mediaManager.upload(
+            "/profile-pictures", // Folder in Media Manager
+            buffer,
+            fileName,
+            {
+                mediaOptions: {
+                    mimeType: "image/jpeg",
+                    mediaType: "image",
+                },
+                metadataOptions: {
+                    isPrivate: false,
+                },
+            }
+        );
+
+        // Return the uploaded image URL
+        return uploadResult.fileUrl;
+    } catch (error) {
+        console.error("Image upload failed:", error);
+        throw new Error("Failed to upload the image.");
+    }
+}
