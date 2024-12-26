@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Profile Picture</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #image-container {
+            width: 300px;
+            height: 300px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        img {
+            max-width: 100%;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="image-container">
+        <img id="image" src="" alt="Profile Picture">
+    </div>
+    <button id="save-button">Save</button>
+
+    <script>
+        let cropper;
+
+        // Function to convert Wix media links to usable URLs
+        function convertWixMediaLink(mediaLink) {
+            if (mediaLink.startsWith("wix:image://")) {
+                const baseUrl = "https://static.wixstatic.com/media/";
+                const match = mediaLink.match(/wix:image:\/\/v1\/([^/]+)/);
+                if (match) {
+                    const fileName = match[1];
+                    return baseUrl + fileName;
+                }
+            }
+            return mediaLink; // Return original link if not a Wix link
+        }
+
+        // Initialize the cropper with the profile picture
+        window.onmessage = (event) => {
+            const imageUrl = event.data;
+            if (typeof imageUrl === "string") {
+                const convertedUrl = convertWixMediaLink(imageUrl); // Convert Wix media link to usable URL
+                const imageElement = document.getElementById("image");
+                imageElement.src = convertedUrl;
+
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                cropper = new Cropper(imageElement, {
+                    aspectRatio: 1, // Square crop
+                    viewMode: 1, // Restrict crop box within image
+                });
+            }
+        };
+
+        // Save cropped image
+        document.getElementById("save-button").addEventListener("click", () => {
+            if (cropper) {
+                // Get the cropped image as a Base64 string
+                const croppedImage = cropper.getCroppedCanvas().toDataURL("image/jpeg");
+
+                // Send the cropped image back to Wix Velo
+                parent.postMessage(croppedImage, "*");
+            }
+        });
+    </script>
+</body>
+</html>
